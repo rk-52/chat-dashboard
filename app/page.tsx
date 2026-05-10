@@ -1,65 +1,71 @@
-import Image from "next/image";
+"use client";
+
+import { useSession, signIn } from "next-auth/react";
+import ChatBox from "@/components/ChatBox";
 
 export default function Home() {
+  // useSession → reads the current login state
+  // status = "loading" | "authenticated" | "unauthenticated"
+  const { data: session, status } = useSession();
+
+  // CASE 1: Still checking if user is logged in
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-400">Checking login status...</p>
+      </div>
+    );
+  }
+
+  // CASE 2: User is NOT logged in → show login screen
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-6 bg-gray-950">
+        <h1 className="text-4xl font-bold text-white">AI Chat Dashboard</h1>
+        <p className="text-gray-400">Sign in</p>
+        <button
+          onClick={() => signIn("google")}
+          // signIn("google") → triggers Google OIDC login flow
+          className="bg-blue-600 hover:bg-blue-700 text-white 
+                     px-8 py-3 rounded-xl font-medium transition-colors"
+        >
+          Sign in with Google
+        </button>
+      </div>
+    );
+  }
+
+  // CASE 3: User IS logged in → show the chat
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="flex flex-col min-h-screen bg-gray-950 p-4">
+      {/* Header bar */}
+      <div className="flex justify-between items-center mb-4 max-w-3xl mx-auto w-full">
+        <h1 className="text-xl font-bold text-white">AI Chat Dashboard</h1>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400">
+            {session.user?.email}
+            {/* shows logged-in user's email */}
+          </span>
+          <button
+            onClick={() => signIn()}
+            className="text-sm bg-gray-700 hover:bg-gray-600 
+                       text-white px-3 py-1 rounded-lg"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Sign Out
+          </button>
         </div>
-      </main>
+      </div>
+
+      {/* Chat UI — all the chat logic lives inside ChatBox */}
+      <div className="flex-1 max-w-3xl mx-auto w-full">
+        <ChatBox />
+        {/* 
+          ChatBox internally uses:
+          - useChat() hook → handles messages, AI calls, GraphQL
+          - MessageList   → displays messages
+          - MessageInput  → captures user typing
+        */}
+      </div>
     </div>
   );
 }

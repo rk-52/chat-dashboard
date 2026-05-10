@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { askAI } from "../lib/ai";
+import { askAI } from "../../lib/ai";
 
 export default function ChatPage() {
   const [input, setInput] = useState("");

@@ -1,4 +1,8 @@
-export async function askAI(prompt: string) {
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest) {
+  const { prompt } = await req.json();
+
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -6,11 +10,13 @@ export async function askAI(prompt: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-3.5-turbo",
+      model: "mistralai/mistral-7b-instruct:free",
       messages: [{ role: "user", content: prompt }],
     }),
   });
 
   const data = await res.json();
-  return data.choices?.[0]?.message?.content;
+  const reply = data.choices?.[0]?.message?.content ?? "No response";
+
+  return NextResponse.json({ reply });
 }
