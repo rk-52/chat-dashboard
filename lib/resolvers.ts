@@ -6,7 +6,7 @@ export const resolvers = {
   },
   Mutation: {
     sendMessage: (_: any, { text }: any) => {
-      const msg = { id: Date.now(), text };
+      const msg = { id: Date.now().toString(), text };
       messages.push(msg);
       return msg;
     },

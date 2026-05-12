@@ -45,7 +45,14 @@ export function useChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: text }),
       });
-      const { reply } = await res.json();
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to get AI response");
+      }
+
+      const { reply } = data;
 
       // 4. Add AI response to state
       const aiMessage: Message = {
@@ -57,7 +64,9 @@ export function useChat() {
       setAiMessages((prev) => [...prev, aiMessage]);
 
     } catch (err) {
-      setError("Something went wrong. Try again.");
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong. Try again.";
+      setError(errorMessage);
+      console.error("Chat error:", err);
     } finally {
       setLoading(false);
     }
